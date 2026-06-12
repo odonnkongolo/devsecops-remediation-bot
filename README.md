@@ -94,6 +94,7 @@ push / pull_request to main
 > All jobs run on **Node.js 24** with modern action versions (`actions/setup-python@v5`, `actions/setup-node@v4`).
 
 ---
+<img width="3024" height="876" alt="image" src="https://github.com/user-attachments/assets/783f997a-a06e-43f5-a49c-2b22a71be45c" />
 
 ## ⚙️ How It Works
 
