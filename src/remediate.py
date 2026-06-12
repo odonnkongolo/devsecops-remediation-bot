@@ -43,18 +43,22 @@ def handler(event, context):
         # 3. Fire a webhook alert to an external system (like Slack)
         slack_url = os.environ.get("SLACK_WEBHOOK_URL")
         if slack_url:
-            msg = {
-                "text": (
-                    f"🚨 *Auto-Remediation Triggered!* 🚨\n"
-                    f"Removed exposed SSH (Port 22) from Security Group: `{resource_id}`"
+            # Enforce HTTPS-only to prevent unexpected scheme attacks (CWE-22 / B310)
+            if not slack_url.startswith("https://"):
+                print("Error: SLACK_WEBHOOK_URL must use HTTPS. Alert not sent.")
+            else:
+                msg = {
+                    "text": (
+                        f"🚨 *Auto-Remediation Triggered!* 🚨\n"
+                        f"Removed exposed SSH (Port 22) from Security Group: `{resource_id}`"
+                    )
+                }
+                req = urllib.request.Request(
+                    slack_url,
+                    data=json.dumps(msg).encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
                 )
-            }
-            req = urllib.request.Request(
-                slack_url,
-                data=json.dumps(msg).encode("utf-8"),
-                headers={"Content-Type": "application/json"},
-            )
-            urllib.request.urlopen(req)
+                urllib.request.urlopen(req)  # nosec B310 - scheme validated above
 
     except Exception as e:
         print(f"Failed to remediate Security Group {resource_id}: {str(e)}")
