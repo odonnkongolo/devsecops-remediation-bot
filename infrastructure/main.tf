@@ -14,7 +14,7 @@ resource "aws_lambda_function" "remediator" {
   runtime          = "python3.10"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
   # Add this line to give the bot 15 seconds to finish its job
-  timeout          = 15
+  timeout = 15
 }
 
 # 3. The Detective: AWS Config Rule for Port 22
@@ -31,7 +31,7 @@ resource "aws_config_config_rule" "restricted_ssh" {
 resource "aws_cloudwatch_event_rule" "config_trigger" {
   name        = "trigger-remediation-on-ssh"
   description = "Fires Lambda when AWS Config detects open SSH"
-  
+
   event_pattern = jsonencode({
     source      = ["aws.config"]
     detail-type = ["Config Rules Compliance Change"]
