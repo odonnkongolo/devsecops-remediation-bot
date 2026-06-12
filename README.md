@@ -54,10 +54,44 @@ devsecops-remediation-bot/
 │   ├── iam.tf                # IAM roles & policies for Lambda and Config
 │   └── providers.tf          # AWS provider configuration
 ├── .github/
-│   └── workflows/            # CI/CD security scanning pipelines
+│   └── workflows/
+│       └── ci.yml            # Ruff → Bandit → Trivy code quality gates
 ├── images/                   # Project screenshots and documentation assets
 └── README.md
 ```
+
+---
+
+## 🔬 CI — Code Quality & Security Gates
+
+Every push and pull request runs three automated checks in sequence via **GitHub Actions**. Each job must pass before the next one starts.
+
+```
+push / pull_request to main
+         │
+         ▼
+    ┌─────────┐
+    │  ruff   │  ① Lint & format check — style issues and import order
+    └────┬────┘
+         │ needs: ruff
+         ▼
+    ┌─────────┐
+    │  bandit │  ② Python security analysis — hardcoded secrets, unsafe calls
+    └────┬────┘
+         │ needs: bandit
+         ▼
+    ┌─────────┐
+    │  trivy  │  ③ IaC & filesystem vulnerability scan — CRITICAL/HIGH CVEs
+    └─────────┘
+```
+
+| Job | Tool | What it checks |
+|---|---|---|
+| `ruff` | [Ruff](https://docs.astral.sh/ruff/) | Python lint rules + `ruff format --check` |
+| `bandit` | [Bandit](https://bandit.readthedocs.io/) | Python security vulnerabilities (`-ll -ii`) |
+| `trivy` | [Trivy](https://aquasecurity.github.io/trivy/) | Filesystem CVEs + Terraform IaC misconfigs |
+
+> All jobs run on **Node.js 24** with modern action versions (`actions/setup-python@v5`, `actions/setup-node@v4`).
 
 ---
 
